@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>訪視督導回饋語句庫</title>
+<style>
+  :root{
+    --navy:#0f3057;
+    --navy-deep:#0a2240;
+    --teal:#00a896;
+    --teal-dark:#028090;
+    --mint:#e8f7f5;
+    --mint-border:#bfeaf5;
+    --ink:#1c2b3a;
+    --muted:#5b6b7a;
+    --paper:#ffffff;
+    --amber:#f2a541;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:"Microsoft JhengHei","PingFang TC","Noto Sans TC",sans-serif;
+    background:linear-gradient(180deg,var(--navy-deep) 0%, var(--navy) 130px, #f4f8f9 130px);
+    color:var(--ink);
+    min-height:100vh;
+    padding-bottom:60px;
+  }
+  header{
+    padding:26px 20px 16px;
+    color:#fff;
+    max-width:960px;
+    margin:0 auto;
+  }
+  header h1{ margin:0 0 4px; font-size:21px; letter-spacing:1px; }
+  header p{ margin:0; font-size:12.5px; color:#bcd4e6; }
+  .container{ max-width:960px; margin:0 auto; padding:0 16px; }
+
+  .search-bar{
+    margin-top:-20px;
+    margin-bottom:14px;
+    background:var(--paper);
+    border-radius:14px;
+    box-shadow:0 6px 20px rgba(15,48,87,0.15);
+    padding:10px 16px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .search-bar input{
+    flex:1; border:none; outline:none; font-size:15px;
+    font-family:inherit; color:var(--ink); padding:6px 4px;
+  }
+  .search-bar .icon{ color:var(--teal-dark); font-size:16px; }
+
+  /* 已選取清單面板 */
+  .selected-panel{
+    background:var(--navy);
+    border-radius:14px;
+    padding:14px 16px 16px;
+    margin-bottom:18px;
+    box-shadow:0 6px 20px rgba(15,48,87,0.2);
+  }
+  .selected-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:10px;
+  }
+  .selected-header h2{
+    color:#fff;
+    font-size:14px;
+    margin:0;
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  .selected-header .count-badge{
+    background:var(--teal);
+    color:#fff;
+    font-size:11px;
+    padding:1px 8px;
+    border-radius:999px;
+  }
+  .selected-actions{ display:flex; gap:6px; }
+  .btn-small{
+    font-size:12px;
+    padding:6px 12px;
+    border-radius:8px;
+    border:none;
+    cursor:pointer;
+    font-family:inherit;
+  }
+  .btn-copy-all{ background:var(--teal); color:#fff; font-weight:bold; }
+  .btn-copy-all:hover{ background:var(--teal-dark); }
+  .btn-clear{ background:rgba(255,255,255,0.12); color:#fff; }
+  .btn-clear:hover{ background:rgba(255,255,255,0.22); }
+
+  .selected-empty{
+    color:#9fb8cc;
+    font-size:13px;
+    text-align:center;
+    padding:14px 6px;
+  }
+  .selected-list{ display:flex; flex-direction:column; gap:8px; }
+  .selected-item{
+    background:#fff;
+    border-radius:10px;
+    padding:8px 10px;
+    display:flex;
+    gap:8px;
+    align-items:flex-start;
+  }
+  .selected-num{
+    flex-shrink:0;
+    width:22px;
+    height:22px;
+    background:var(--teal);
+    color:#fff;
+    border-radius:50%;
+    font-size:12px;
+    font-weight:bold;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    margin-top:2px;
+  }
+  .selected-textarea{
+    flex:1;
+    border:1px solid #dfeaea;
+    border-radius:8px;
+    padding:7px 9px;
+    font-family:inherit;
+    font-size:13.5px;
+    line-height:1.6;
+    resize:none;
+    overflow:hidden;
+    color:var(--ink);
+  }
+  .selected-textarea:focus{ outline:2px solid var(--teal); border-color:transparent; }
+  .selected-remove{
+    flex-shrink:0;
+    background:none;
+    border:1px solid var(--mint-border);
+    color:var(--teal-dark);
+    font-size:11px;
+    border-radius:8px;
+    padding:6px 8px;
+    cursor:pointer;
+    white-space:nowrap;
+    align-self:flex-start;
+    margin-top:2px;
+  }
+  .selected-remove:hover{ background:var(--mint); }
+
+  .tabs{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px; }
+  .tab{
+    border:1px solid var(--mint-border);
+    background:var(--paper);
+    color:var(--navy);
+    padding:6px 14px;
+    border-radius:999px;
+    font-size:13px;
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  .tab:hover{ background:var(--mint); }
+  .tab.active{ background:var(--teal); border-color:var(--teal); color:#fff; font-weight:bold; }
+
+  .category{ margin-bottom:24px; }
+  .category-title{
+    font-size:15px; font-weight:bold; color:var(--navy);
+    margin-bottom:10px; border-left:4px solid var(--teal); padding-left:10px;
+  }
+  .category-count{ font-size:12px; color:var(--muted); font-weight:normal; }
+
+  .card{
+    background:var(--paper);
+    border:1px solid #e3edf0;
+    border-radius:12px;
+    padding:12px 14px;
+    margin-bottom:10px;
+    transition:all .15s ease;
+  }
+  .card:hover{ border-color:var(--teal); box-shadow:0 4px 14px rgba(0,168,150,0.1); }
+  .card.selected{ background:var(--mint); border-color:var(--teal); }
+
+  .card-summary{
+    font-size:12.5px;
+    font-weight:bold;
+    color:var(--teal-dark);
+    margin-bottom:4px;
+    letter-spacing:0.3px;
+    user-select:none;
+  }
+  .card-summary::before{ content:"摘要｜"; color:var(--amber); font-weight:bold; }
+  .card-text{
+    font-size:14px;
+    line-height:1.7;
+    white-space:pre-line;
+    margin-bottom:8px;
+  }
+  .card-footer{ display:flex; justify-content:flex-end; }
+  .add-btn{
+    font-size:12px;
+    padding:6px 12px;
+    border-radius:8px;
+    border:1px solid var(--teal);
+    background:var(--mint);
+    color:var(--teal-dark);
+    cursor:pointer;
+    font-family:inherit;
+  }
+  .add-btn.on{ background:var(--teal); color:#fff; }
+  .add-btn:hover{ filter:brightness(0.97); }
+
+  .empty-state{ text-align:center; color:var(--muted); padding:40px 10px; font-size:14px; }
+
+  .toast{
+    position:fixed; bottom:24px; left:50%;
+    transform:translateX(-50%) translateY(20px);
+    background:var(--navy-deep); color:#fff;
+    padding:10px 20px; border-radius:999px; font-size:13px;
+    opacity:0; pointer-events:none; transition:all .25s ease;
+    box-shadow:0 6px 20px rgba(0,0,0,0.25);
+  }
+  .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>訪視督導回饋語句庫</h1>
+  <p>幼兒／保母姓名已以（幼兒姓名）（保母姓名）取代，請選用後自行填入實際內容</p>
+</header>
+
+<div class="container">
+  <div class="search-bar">
+    <span class="icon">🔍</span>
+    <input type="text" id="searchInput" placeholder="搜尋關鍵字（例如：睡眠、回報、環評…）">
+  </div>
+
+  <div class="selected-panel">
+    <div class="selected-header">
+      <h2>📋 已選取語句 <span class="count-badge" id="countBadge">0</span></h2>
+      <div class="selected-actions">
+        <button class="btn-small btn-clear" id="clearBtn">清空</button>
+        <button class="btn-small btn-copy-all" id="copyAllBtn">複製全部</button>
+      </div>
+    </div>
+    <div id="selectedList"></div>
+  </div>
+
+  <div class="tabs" id="tabs"></div>
+  <div id="results"></div>
+</div>
+
+<div class="toast" id="toast">已複製</div>
+
+<script>
+const DATA = [
+  { cat: "睡眠", items: [
+    { s: "嬰兒床床板應隨年齡調降", t: "請留意托育人員對於托兒的睡眠區域的安排，並請提醒托育人員隨著幼兒年齡增長，嬰兒床的床板也應漸漸放低，避免托兒攀爬、翻落。" },
+    { s: "收托較小嬰幼兒時嬰兒床應清空", t: "請留意托育人員對於幼兒睡眠區域的安排，並提醒托育人員若之後收托年齡較小的嬰幼兒時，如有睡嬰兒床應把嬰兒床清空，避免棉被衣物擺放、設置床圍。" },
+    { s: "嬰兒床不綁床圍（窒息風險）", t: "請提醒托育人員嬰兒床不建議綁床圍，擔心會有窒息、繩子勒住、悶熱等風險，且無法直接安全看視。" },
+    { s: "睡眠應平坦堅硬，不建議搖椅", t: "請加強提醒托育人員留意幼兒睡眠環境安全，幼兒睡眠應睡在平坦堅硬且安全的睡眠空間；並建議不適合使用安撫搖椅。" },
+    { s: "落實睡眠安全看視，調整睡眠區域", t: "請加強宣導幼兒睡眠安全，並提醒應落實幼兒睡眠安全看視，建議托育人員再調整幼兒的睡眠區域。" },
+    { s: "搖床固定，仍須隨年齡調整", t: "請加強提醒托育人員留意幼兒睡眠安全，雖然托育人員已將搖床固定住無法搖晃，但適用月齡有限，請提醒托育人員隨著托兒年齡增長調整幼兒睡眠區域。" },
+    { s: "同睡幼兒棉被避免遮蔽口鼻", t: "請留意托育人員對於幼兒睡眠區域的安排，若幼兒們同睡在一起，請務必提醒托育人員留意避免幼兒們的棉被有互相遮蔽口鼻的風險。" },
+    { s: "沙發不適合作為睡眠使用", t: "請向托育人員說明並宣導沙發不適合做為睡眠使用，因沙發構造不夠平坦堅硬且有窒息、摔落等風險，故請加強提醒托育人員留意幼兒睡眠環境安全，幼兒睡眠應睡在平坦堅硬且安全的睡眠空間。" }
+  ]},
+  { cat: "托育日誌／發展", items: [
+    { s: "托育日誌增加睡眠／如廁／活動紀錄", t: "請輔導托育人員落實紀錄托育日誌，並建議托育人員除了記錄幼兒飲食外，可增加紀錄幼兒睡眠/如廁/活動等狀況。" },
+    { s: "落實紀錄托育日誌，避免LINE聊天式傳送", t: "請加強宣導托育人員落實紀錄托育日誌，並鼓勵托育人員使用紙本/APP/LINE【記事本】，請建議托育人員避免用LINE訊息一則一則聊天式傳送，避免一來一回，耽誤托育工作。" },
+    { s: "鼓勵使用記事本，避免LINE聊天式傳送", t: "請鼓勵托育人員使用紙本/APP/LINE【記事本】，避免用LINE訊息聊天式傳送，一來一回，耽誤托育工作。" },
+    { s: "早產兒發展檢核以矯正年齡計算", t: "請提醒托育人員若幼兒為早產兒，幼兒2歲前施作發展檢核時應以預產期作為矯正年齡施作檢核。" },
+    { s: "活動空間需符合年齡與發展", t: "請持續留意托兒的活動空間是否符合環境安全，並評估該活動空間是否符合托兒的年齡與發展。" },
+    { s: "W腿坐姿留意大肢體發展", t: "此次環評照片中有拍到（幼兒姓名）W腿坐姿，請提醒托育人員留意幼兒坐姿，避免影響大肢體動作發展。" }
+  ]},
+  { cat: "環評", items: [
+    { s: "維持環境安全並追蹤改善項目", t: "請提醒托育人員須時時維持環境安全，並追蹤托育人員是否有維持此次訪視現場改善之項目。" },
+    { s: "追蹤環境檢核複查情形", t: "請追蹤托育地環境檢核複查情形，並提醒托育人員托育地環境安全檢核應時時維持符合。" },
+    { s: "40項符合仍須維持環境安全", t: "請加強宣導雖然環境檢核40項皆符合，但環境安全仍須符合才能算通過。" },
+    { s: "醫藥箱生理食鹽水效期", t: "下半年訪視請留意托育地醫藥箱裡的生理食鹽水是否有在效期內。" },
+    { s: "吊掛物擺放位置及高度", t: "請向托育人員宣導吊掛物包含背巾、袋子、包包等，皆應留意擺放位置及高度，以免造成幼兒傷害事件。" },
+    { s: "環境安全不局限於環評40項", t: "請提醒托育人員托育地環境安全檢核不局限於環評40項，且環境安全應時時維持符合。" },
+    { s: "環境改善項目多，下次務必複查", t: "因此次環境改善項目較多，請於下次訪視時務必再確認環境安全是否維持。並請提醒托育人員托育地環境安全檢核不局限於環評40項，且環境安全皆應時時維持符合。" },
+    { s: "說明環境安全檢查的意義與價值", t: "請傳達理解托育地也是托育人員日常生活居處，了解托育人員及其同住成員有日常起居的使用習慣，說明環境安全檢查是有助於托育專業的提升，維持托兒的安全環境，養成良好的安全行為，營造舒適的托育服務空間，不但能獲得家長的信賴，更能避免事故傷害發生的機率。" }
+  ]},
+  { cat: "收托規範", items: [
+    { s: "收托人數計算規範（三親等內幼兒）", t: "請宣導收托人數規範，並說明若無監護人陪同照顧，在托育地5歲以下三親等內幼兒及12歲以下幼兒皆須計算在收托人數內。" },
+    { s: "留意收托人數是否符合規範", t: "請留意托育人員的收托人數是否符合規範。" }
+  ]},
+  { cat: "到宅", items: [
+    { s: "新領證在職／體檢／回報事項總整理", t: "請留意托育人員新領證後的在職、體檢安排，並加強宣導收托回報、意外事故24小時內回報、傳染病知悉48小時內回報、定期施作發展檢核、紀錄寶寶日誌、睡眠安全、用藥安全、外出目的應以幼兒利益為主等相關托育事項。" },
+    { s: "停止申請送審與恢復申請提醒", t: "請協助托育人員完成停止申請之送審作業，並宣導停止申請後如有進行托育相關工作，應重新辦理恢復申請。" },
+    { s: "追蹤在職時數與線上課程進度", t: "請持續留意托育人員在職時數，並追蹤其線上課程完成進度、時數證明回傳狀況。" },
+    { s: "收托前先確認型態是否符合規範", t: "因到宅收托不是只看托育地的人數，也會以當日的托育型態合併計算，故可以提醒托育人員若往後有新收托案件，可於收托前先回報中心確認型態是否符合規範。" },
+    { s: "到宅仍須留意環境安全並溝通", t: "請提醒托育人員雖到宅托育地為家長家，但托育人員仍須留意環境安全並適時給予家長建議和溝通討論。" },
+    { s: "托育人員仍為主要照顧者", t: "請提醒托育人員托育期間即便家長在家、或家中有其他偕同照顧者，但托育人員仍為托兒的主要照顧者。" },
+    { s: "續約請同步通知托育區", t: "請追蹤托育人員的收托狀況，如完成續約請同步通知托育區。" },
+    { s: "收托異動七日內回報主區、托育區", t: "請持續追蹤托育人員的收托狀況，並請提醒托育人員如有收托異動應於事實發生七日內同步回報主區、托育區。" },
+    { s: "收托前完成簽約並七日內回報", t: "請提醒托育人員收托前應完成簽約並於事實發生七日內回報中心。" }
+  ]},
+  { cat: "宣導、輔導", items: [
+    { s: "加強宣導緊急事件處理流程", t: "請加強宣導緊急事件處理流程，並提醒托育人員應提供適當且安全的睡眠設備與空間。" },
+    { s: "追蹤2年1次體檢與回傳", t: "請追蹤托育人員是否於期限內完成2年1次體檢，並確認托育人員的體檢報告是否有回傳中心。" },
+    { s: "外出散步需家長同意並注意安全", t: "請提醒托育人員帶幼兒外出散步活動時應經過家長允許並注意外出安全。" },
+    { s: "紀錄寶寶日誌、睡眠安全、異動回報", t: "請輔導托育人員紀錄寶寶日誌、留意幼兒睡眠安全，以及如有收托異動應於事實發生7日內回報中心。" },
+    { s: "收托異動期限、準公收費上限", t: "請持續宣導托育人員留意收托異動的期限及相關回報資料，另提醒托育人員目前仍為準公身分，應持續遵守準公收費上限。" },
+    { s: "收托狀況與回報，異動七日內回報", t: "請追蹤托育人員的收托狀況與收托回報，並加強輔導托育人員如有新收托/終托/收托異動等皆須於事實發生7日內回報中心。" },
+    { s: "意外／傳染病回報時效與日常事項", t: "請宣導意外事故24小時內回報、傳染病知悉48小時內回報、定期施作發展檢核、紀錄寶寶日誌、睡眠安全、用藥安全、外出目的應以幼兒利益為主。" },
+    { s: "外出活動注意環境與看視", t: "請提醒托育人員帶孩子外出活動，一定要注意環境安全、幼兒安全及安全看視。" },
+    { s: "2歲以下不建議戴口罩", t: "2歲以下嬰幼兒因呼吸道較小且無法自行取下口罩，有導致窒息的風險，所以不建議戴口罩，屬於「不適合戴口罩」對象，而且也沒有適合的口罩尺寸。" },
+    { s: "學步車無助學步且易翻覆", t: "請提醒托育人員學步車（又稱螃蟹車）其實無助『學步』，用來暫時安放幼兒也不適合，並說明可能會影響幼兒走路的姿勢、且容易翻覆導致更多風險。" },
+    { s: "勿睡沙發床／躺椅／娃娃車", t: "請加強宣導幼兒睡眠安全，並提醒托育人員請勿讓托兒睡在沙發床、安撫躺椅和娃娃車上，避免托兒有跌落受傷的危險。且「娃娃車」是適用於幼兒外出的使用工具，也不能用來睡眠時放置。" },
+    { s: "同住家人不可代為照顧行為", t: "請再留意托兒與托育人員同住家人的互動情形，並請提醒托育人員主要照顧者仍為托育人員，其同住家人不可代為從事照顧行為（如餵食、洗澡等）。" },
+    { s: "托育時間專心，家務安排確認", t: "請加強宣導托育時間務必專心托育，並請確認平時全日托期間托育人員如何安排倒垃圾、買菜的家務。" },
+    { s: "幼兒受傷應24小時內回報", t: "請提醒托育人員幼兒不論是在托育地受傷、還是帶傷到托育地，皆應落實紀錄並於24小時內回報中心。" },
+    { s: "恢復托育服務應辦理申請程序", t: "請務必清楚告知：依據居家式托育服務提供者登記及管理辦法第15條，托育人員恢復托育服務時，應填具申請書，並檢附有關文件，經原核發服務登記證書機關同意後，始可收托。故未領有登記證期間不得從事托育工作。" }
+  ]},
+  { cat: "親媒", items: [
+    { s: "追蹤收托回報與補助送件", t: "請追蹤托育人員的收托回報、家長申請補助送件情形。" },
+    { s: "向保親宣導準公收費項目", t: "請向保親同步宣導準公收費項目與上限。" },
+    { s: "新收托訪視留意適應與關係", t: "請安排新收托訪視並留意幼兒適應狀況與保親關係。" }
+  ]},
+  { cat: "給同仁的建議", items: [
+    { s: "電聯時間斟酌，避免影響作息", t: "建議同仁可以斟酌安排電聯托育人員的時間，若托兒午睡期間撥打電話托育人員未接聽，建議可以改用訊息留言請托育人員回電的方式，避免持續撥打造成影響托育地作息。" },
+    { s: "訪視為不約訪說明", t: "說明訪視為不約訪，只要是托育時段中心皆有可能安排訪視。" },
+    { s: "用案例柔性輔導增加安全意識", t: "請柔性輔導並用案例與托育人員分享，以增加危機安全意識。" },
+    { s: "托兒哭泣應回應安撫", t: "請輔導托育人員若托兒哭的時候，應回應托兒需求、給予安撫。" },
+    { s: "演練勿用現托兒姓名舉例", t: "請再加強提醒緊急事件處理流程。另，演練時建議以舉例的方式，如：A童，應盡量避免以現托兒姓名為例，以免造成不必要的誤會。" },
+    { s: "電訪確認戶籍及補助提醒", t: "電訪家長時，可分別再確認戶籍，並提醒家長未來如有遷戶籍至臺北市可再申請提升補助。" }
+  ]},
+  { cat: "重要提醒", items: [
+    { s: "115年起在職時數改歷年制", t: "※因115年起托育人員在職時數改為歷年制，請務必再留意托育人員的時數安排。" }
+  ]},
+  { cat: "退件範例", items: [
+    { s: "鐵捲門非主要出入口勾選範例", t: "托育地有鐵捲門，但非為主要出入口，故第4項改為「是」、第5項為「無此項目」" },
+    { s: "窗簾拉繩誤勾選退件案例", t: "114/2/20退件原因：第14項 窗簾拉繩長度及收線器位置為收托兒無法碰觸的高度。>>托育地客廳的窗簾有拉繩，訪員誤勾選為無此項目" },
+    { s: "睡床附件誤勾選退件案例", t: "114/3/11退件原因：第37項 收托兒睡床之附屬配件或自行加裝之附件穩固。>>托兒睡眠皆在軟墊上，並無睡床。訪員誤勾選為是" },
+    { s: "環評不通過項目應盡快改善", t: "114/10/2退件原因：依114/6/24社會局聯繫會議紀錄，若訪視環評有不通過部分項目應請托育人員盡快改善。" },
+    { s: "資服網解除收托資料補充範例", t: "115/5/15退件原因：因資服網已解除收托，故補充幼兒資料\n【托兒（幼兒姓名），身份證字號：A*********，出生年月日：114/*/*，於114/*/*新收托，至115/*/*結束收托，因資服網已解除收托，故導致收托幼兒與紀錄不符。】" },
+    { s: "終托但補助未解除導致不符", t: "【托兒（幼兒姓名）已於114/8/29終托，因社會局補助異動尚未解除，故資服網無法解除收托，導致收托幼兒與紀錄不符。】" }
+  ]},
+  { cat: "腸病毒", items: [
+    { s: "追蹤復托與清消作業", t: "請追蹤復托情形及宣導加強清消作業。" }
+  ]},
+  { cat: "受傷", items: [
+    { s: "環境安全防護（防撞措施）", t: "環境安全防護必須到位：托育場所內的各項設施（如攀爬架、桌角、硬質傢俱等），應全面加裝防撞泡棉、軟墊或防護設備，切勿讓幼童在無防護措施的環境下遊玩。" },
+    { s: "安全帶使用需留意情緒反應", t: "注意輔具與安全設備的正確使用：使用兒童餐椅、安全座椅或安全帶時，應注意幼童情緒與身體反應。若幼童因哭鬧扭動掙扎，應即時檢視安全帶是否會因摩擦或壓迫而造成身體傷害，不可僅放任其自行冷靜。" },
+    { s: "每日傷勢檢查與主動溝通", t: "落實每日傷勢檢查與主動溝通：接送幼童時應確實進行身心狀況檢查；若發現幼童身上有任何輕微撞傷、紅腫或異常，應第一時間主動與家長核對、了解、交接傷勢照顧等相關資訊，並詳實記載於托育日誌或對話紀錄中，以釐清責任及後續妥善照顧傷勢。" },
+    { s: "保證人地位與過失責任", t: "建立防護觀念，避免不作為責任：保母依法對受託幼童負有「保證人地位」。縱使傷勢可能係幼童自行碰撞或與同儕推擠所致，若係因保母「疏於看管、防護不週（消極不作為）」所造成，法律上仍會被認定構成過失傷害犯罪並負擔刑事責任。" }
+  ]},
+  { cat: "超收", items: [
+    { s: "超收違規將影響意外理賠", t: "請提醒托育人員，意外事件發生時，托育人員收托人數如違反法規規範（如超收、未通報等相關違規等），所有托兒之意外事件均不能理賠。" }
+  ]}
+];
+
+// 給每一筆項目一個唯一 id
+let uid = 0;
+DATA.forEach(g => g.items.forEach(it => { it.id = 'i' + (uid++); }));
+const ALL_ITEMS = {};
+DATA.forEach(g => g.items.forEach(it => { ALL_ITEMS[it.id] = it; }));
+
+let selectedOrder = [];   // 存 id，依選取順序
+let editedText = {};      // id -> 使用者編輯後的文字
+
+const tabsEl = document.getElementById('tabs');
+const resultsEl = document.getElementById('results');
+const searchInput = document.getElementById('searchInput');
+const toast = document.getElementById('toast');
+const selectedListEl = document.getElementById('selectedList');
+const countBadge = document.getElementById('countBadge');
+
+let activeCat = "全部";
+
+function buildTabs(){
+  const cats = ["全部", ...DATA.map(d => d.cat)];
+  tabsEl.innerHTML = "";
+  cats.forEach(c => {
+    const btn = document.createElement('button');
+    btn.className = 'tab' + (c === activeCat ? ' active' : '');
+    btn.textContent = c;
+    btn.onclick = () => { activeCat = c; renderResults(); };
+    tabsEl.appendChild(btn);
+  });
+}
+
+function toggleSelect(id){
+  const idx = selectedOrder.indexOf(id);
+  if (idx === -1){
+    selectedOrder.push(id);
+  } else {
+    selectedOrder.splice(idx, 1);
+  }
+  renderResults();
+  renderSelected();
+}
+
+function showToast(msg){
+  toast.textContent = msg || '已複製';
+  toast.classList.add('show');
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(() => toast.classList.remove('show'), 1400);
+}
+
+function renderResults(){
+  buildTabs();
+  const keyword = searchInput.value.trim();
+  resultsEl.innerHTML = "";
+  let anyMatch = false;
+
+  DATA.forEach(group => {
+    if (activeCat !== "全部" && activeCat !== group.cat) return;
+    const filtered = group.items.filter(it => !keyword || it.t.includes(keyword) || it.s.includes(keyword));
+    if (filtered.length === 0) return;
+    anyMatch = true;
+
+    const catDiv = document.createElement('div');
+    catDiv.className = 'category';
+
+    const title = document.createElement('div');
+    title.className = 'category-title';
+    title.innerHTML = `${group.cat} <span class="category-count">（${filtered.length}）</span>`;
+    catDiv.appendChild(title);
+
+    filtered.forEach(it => {
+      const isSelected = selectedOrder.includes(it.id);
+      const card = document.createElement('div');
+      card.className = 'card' + (isSelected ? ' selected' : '');
+
+      const summary = document.createElement('div');
+      summary.className = 'card-summary';
+      summary.textContent = it.s;
+
+      const textEl = document.createElement('div');
+      textEl.className = 'card-text';
+      textEl.textContent = it.t;
+
+      const footer = document.createElement('div');
+      footer.className = 'card-footer';
+
+      const btn = document.createElement('button');
+      btn.className = 'add-btn' + (isSelected ? ' on' : '');
+      btn.textContent = isSelected ? '✓ 已加入（移回選項）' : '＋ 加入清單';
+      btn.onclick = () => toggleSelect(it.id);
+
+      footer.appendChild(btn);
+      card.appendChild(summary);
+      card.appendChild(textEl);
+      card.appendChild(footer);
+      catDiv.appendChild(card);
+    });
+
+    resultsEl.appendChild(catDiv);
+  });
+
+  if (!anyMatch){
+    resultsEl.innerHTML = '<div class="empty-state">找不到符合的語句，換個關鍵字試試看</div>';
+  }
+}
+
+function autoResize(ta){
+  ta.style.height = 'auto';
+  ta.style.height = (ta.scrollHeight) + 'px';
+}
+
+function renderSelected(){
+  countBadge.textContent = selectedOrder.length;
+  selectedListEl.innerHTML = "";
+
+  if (selectedOrder.length === 0){
+    selectedListEl.innerHTML = '<div class="selected-empty">尚未選取語句，點選下方「＋ 加入清單」開始建立回饋內容</div>';
+    return;
+  }
+
+  const list = document.createElement('div');
+  list.className = 'selected-list';
+
+  selectedOrder.forEach((id, index) => {
+    const it = ALL_ITEMS[id];
+    const currentText = editedText[id] !== undefined ? editedText[id] : it.t;
+
+    const row = document.createElement('div');
+    row.className = 'selected-item';
+
+    const num = document.createElement('div');
+    num.className = 'selected-num';
+    num.textContent = index + 1;
+
+    const ta = document.createElement('textarea');
+    ta.className = 'selected-textarea';
+    ta.value = currentText;
+    ta.rows = 1;
+    ta.oninput = () => { editedText[id] = ta.value; autoResize(ta); };
+
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'selected-remove';
+    removeBtn.textContent = '移回選項';
+    removeBtn.onclick = () => toggleSelect(id);
+
+    row.appendChild(num);
+    row.appendChild(ta);
+    row.appendChild(removeBtn);
+    list.appendChild(row);
+  });
+
+  selectedListEl.appendChild(list);
+  // 初始化高度
+  list.querySelectorAll('textarea').forEach(autoResize);
+}
+
+function copyAll(){
+  if (selectedOrder.length === 0){
+    showToast('尚未選取任何語句');
+    return;
+  }
+  const text = selectedOrder.map((id, i) => {
+    const it = ALL_ITEMS[id];
+    const t = editedText[id] !== undefined ? editedText[id] : it.t;
+    return `${i + 1}. ${t}`;
+  }).join('\n\n');
+
+  navigator.clipboard.writeText(text).then(() => {
+    showToast('已複製全部（' + selectedOrder.length + ' 則）');
+  }).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('已複製全部（' + selectedOrder.length + ' 則）');
+  });
+}
+
+document.getElementById('copyAllBtn').onclick = copyAll;
+document.getElementById('clearBtn').onclick = () => {
+  selectedOrder = [];
+  editedText = {};
+  renderResults();
+  renderSelected();
+};
+
+searchInput.addEventListener('input', renderResults);
+
+renderResults();
+renderSelected();
+</script>
+
+</body>
+</html>
